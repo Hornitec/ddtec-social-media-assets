@@ -1,0 +1,29 @@
+name: Fetch Remote Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Public URL of the image to download"
+        required: true
+      path:
+        description: "Destination path in the repo (e.g. posts/tmp/foo.png)"
+        required: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download image
+        run: |
+          mkdir -p "$(dirname '${{ github.event.inputs.path }}')"
+          curl -sSL -o '${{ github.event.inputs.path }}' '${{ github.event.inputs.url }}'
+          file '${{ github.event.inputs.path }}'
+      - name: Commit and push
+        run: |
+          git config user.email "gestor@ddtecdedetizacao.com.br"
+          git config user.name "DDTEC Automation"
+          git add '${{ github.event.inputs.path }}'
+          git commit -m "fetch: ${{ github.event.inputs.path }}" || echo "nothing to commit"
+          git push

@@ -1,0 +1,22 @@
+name: Call n8n Image Webhook
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Prompt (em inglês) para gerar a imagem via Gemini"
+        required: true
+      path:
+        description: "Caminho de destino no repositório (ex: posts/tmp/foo.png)"
+        required: true
+
+jobs:
+  call-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call n8n webhook
+        run: |
+          curl -sS -X POST "https://n8n-production-6fcda6cd.up.railway.app/webhook/0e1a16e6-05fa-4691-96eb-9ee1ff2b5a08" \
+            -H "Content-Type: application/json" \
+            -H "x-webhook-secret: ${{ secrets.N8N_WEBHOOK_SECRET }}" \
+            -d "$(jq -n --arg prompt "${{ github.event.inputs.prompt }}" --arg path "${{ github.event.inputs.path }}" '{prompt: $prompt, path: $path}')"
